@@ -3,8 +3,7 @@ shinyServer(function(input, output,session){
   # Because too many Unknow users are born in 1969 (system default), I made two data frame.
   # Anything relate to age will use nage data frame.
   if_age = reactive(
-    if (input$selected %in% c("age","age_group") | input$fill == "age_group" |
-        input$t_fill == "age_group" | input$st_fill == "age_group" ) {
+    if (input$selected %in% c("age","age_group") | input$fill == "age_group") {
       nage 
     } else {
       nride
@@ -27,9 +26,16 @@ shinyServer(function(input, output,session){
   })
   
   # Time tab ####
+  if_age_t = reactive(
+    if (input$t_fill == "age_group"){
+      nage
+    } else {
+      nride
+    }
+  )
   # Plot
   output$timeplot = renderPlot(
-      if_age() %>%
+      if_age_t() %>%
         ggplot(aes_string(input$t_sel)) + 
         geom_bar(aes_string(fill=input$t_fill),position = input$t_style) + 
         xlab(str_to_title(input$t_sel)) +
@@ -37,13 +43,20 @@ shinyServer(function(input, output,session){
   )  
   # Table
   output$time_table = DT::renderDataTable({
-      if_age()%>% group_by_(input$t_sel,input$t_fill) %>% summarise(count = n())
+      if_age_t()%>% group_by_(input$t_sel,input$t_fill) %>% summarise(count = n())
   })    
   
   # Station tab ####
+  if_age_s = reactive(
+    if (input$st_fill == "age_group"){
+      nage
+    } else {
+      nride
+    }
+  )
   # Plot
   output$stationplot = renderPlot(
-      if_age() %>% filter(s_s_name == input$sel_st) %>%
+      if_age_s() %>% filter(s_s_name == input$sel_st) %>%
         ggplot(aes_string((input$st_sel))) +
         geom_bar(aes_string(fill=input$st_fill),position = input$st_style) +
         xlab(str_to_title(input$st_sel)) +
@@ -51,7 +64,7 @@ shinyServer(function(input, output,session){
   )
   # Table
   output$station_table = DT::renderDataTable({
-      if_age() %>% filter(s_s_name == input$sel_st) %>% group_by_(input$st_sel,input$st_fill) %>% summarise(count = n())
+      if_age_s() %>% filter(s_s_name == input$sel_st) %>% group_by_(input$st_sel,input$st_fill) %>% summarise(count = n())
   })
   
   # Map tab ####
